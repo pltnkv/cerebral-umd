@@ -1,0 +1,19 @@
+{
+  "name": "cerebral-umd",
+  "version": "0.0.1",
+  "description": "Make cerebral umd build",
+  "scripts": {
+    "demo": "webpack-dev-server --progress --colors --content-base demo --config demo.config.js",
+    "deploydemo": "webpack --config demo.production.config.js",
+    "deploy": "NODE_ENV=production webpack -p",
+    "start": "webpack-dev-server --devtool eval --progress --colors --content-base build"
+  },
+  "author": "pltnkv",
+  "devDependencies": {
+    "babel-loader": "^5.3.2",
+    "cerebral": "^0.33.11",
+    "cerebral-baobab": "^0.4.5",
+    "cerebral-module-devtools": "^0.3.0",
+    "webpack": "^1.5.3"
+  }
+}

@@ -1,0 +1,89 @@
+<html>
+<head>
+    <title>Super simple cerebral example</title>
+    <script src="build/cerebral.js"></script>
+    <script src="build/cerebralDevtools.js"></script>
+    <script src="build/cerebralBaobab.js"></script>
+    <script>
+
+        ////////////////////////////////////
+        // MODEL ///////////////////////////
+
+        var data = {
+            todosColor: 'red',
+            todos: [
+                {id: 1, text: 'Some text'},
+                {id: 2, text: 'Text again'}
+            ],
+            nextId: 3
+        };
+
+        var model = cerebralBaobab(data);
+
+        ////////////////////////////////////
+        // CONTROLLER //////////////////////
+
+        var controller = cerebral(model);
+
+        controller.addModules({
+            devtools: cerebralDevtools()
+        });
+
+        ////////////////////////////////////
+        // ACTIONS /////////////////////////
+
+        function setColor(args) {
+            var state = args.state;
+            var input = args.input;
+
+            state.set(['todosColor'], input.color);
+        }
+
+        function addTodo(args) {
+            var state = args.state;
+            var input = args.input;
+            var nextId = state.get('nextId');
+
+            state.push(['todos'], {
+                id: nextId,
+                text: input.text
+            });
+        }
+
+        function incrementNextId(args) {
+            var state = args.state;
+            var currentNextId = state.get('nextId');
+
+            state.set(['nextId'], ++currentNextId);
+        }
+
+        ////////////////////////////////////
+        // SIGNALS /////////////////////////
+
+        controller.addSignals({
+            setColorClicked: [setColor],
+            addTodoClicked: [addTodo, incrementNextId]
+        });
+
+        ////////////////////////////////////
+        // UI //////////////////////////////
+
+        function onSetColorClick(color) {
+            controller.getSignals().setColorClicked({color: color});
+        }
+
+        function onAddTodoClick() {
+            var text = document.getElementById('todoText').value;
+            controller.getSignals().addTodoClicked({text: text});
+        }
+    </script>
+</head>
+<body>
+<button onclick="onSetColorClick('red')">Set red color</button>
+<br>
+<button onclick="onSetColorClick('green')">Set green color</button>
+<br><br>
+<input id="todoText" value="bla bla bla">
+<button onclick="onAddTodoClick()">Add todo</button>
+</body>
+</html>
