@@ -4,86 +4,138 @@
     <script src="build/cerebral.js"></script>
     <script src="build/cerebralDevtools.js"></script>
     <script src="build/cerebralBaobab.js"></script>
-    <script>
-
-        ////////////////////////////////////
-        // MODEL ///////////////////////////
-
-        var data = {
-            todosColor: 'red',
-            todos: [
-                {id: 1, text: 'Some text'},
-                {id: 2, text: 'Text again'}
-            ],
-            nextId: 3
-        };
-
-        var model = cerebralBaobab(data);
-
-        ////////////////////////////////////
-        // CONTROLLER //////////////////////
-
-        var controller = cerebral(model);
-
-        controller.addModules({
-            devtools: cerebralDevtools()
-        });
-
-        ////////////////////////////////////
-        // ACTIONS /////////////////////////
-
-        function setColor(args) {
-            var state = args.state;
-            var input = args.input;
-
-            state.set(['todosColor'], input.color);
-        }
-
-        function addTodo(args) {
-            var state = args.state;
-            var input = args.input;
-            var nextId = state.get('nextId');
-
-            state.push(['todos'], {
-                id: nextId,
-                text: input.text
-            });
-        }
-
-        function incrementNextId(args) {
-            var state = args.state;
-            var currentNextId = state.get('nextId');
-
-            state.set(['nextId'], ++currentNextId);
-        }
-
-        ////////////////////////////////////
-        // SIGNALS /////////////////////////
-
-        controller.addSignals({
-            setColorClicked: [setColor],
-            addTodoClicked: [addTodo, incrementNextId]
-        });
-
-        ////////////////////////////////////
-        // UI //////////////////////////////
-
-        function onSetColorClick(color) {
-            controller.getSignals().setColorClicked({color: color});
-        }
-
-        function onAddTodoClick() {
-            var text = document.getElementById('todoText').value;
-            controller.getSignals().addTodoClicked({text: text});
-        }
-    </script>
 </head>
 <body>
-<button onclick="onSetColorClick('red')">Set red color</button>
+<div id="colorSettingsBox"></div>
 <br>
-<button onclick="onSetColorClick('green')">Set green color</button>
-<br><br>
-<input id="todoText" value="bla bla bla">
-<button onclick="onAddTodoClick()">Add todo</button>
+<div id="createTodoBox"></div>
+<br>
+Todo list:
+<div id="todosListBox"></div>
+
+<script>
+
+    ////////////////////////////////////
+    // MODEL
+    ////////////////////////////////////
+
+    var data = {
+        listColor: 'red',
+        todos: [
+            {id: 1, text: 'Feed the cat'},
+            {id: 2, text: 'Take the air'}
+        ],
+        nextId: 3
+    };
+
+    var model = cerebralBaobab(data);
+
+    ////////////////////////////////////
+    // CONTROLLER
+    ////////////////////////////////////
+
+    var controller = cerebral(model);
+
+    controller.addModules({
+        devtools: cerebralDevtools()
+    });
+
+    ////////////////////////////////////
+    // ACTIONS
+    ////////////////////////////////////
+
+    function setColor(args) {
+        var state = args.state;
+        var input = args.input;
+
+        state.set(['listColor'], input.color);
+    }
+
+    function addTodo(args) {
+        var state = args.state;
+        var input = args.input;
+        var nextId = state.get('nextId');
+
+        state.push(['todos'], {
+            id: nextId,
+            text: input.text
+        });
+    }
+
+    function incrementNextId(args) {
+        var state = args.state;
+        var currentNextId = state.get('nextId');
+
+        state.set(['nextId'], ++currentNextId);
+    }
+
+    ////////////////////////////////////
+    // SIGNALS
+    ////////////////////////////////////
+
+    controller.addSignals({
+        setColorClicked: [setColor],
+        addTodoClicked: [addTodo, incrementNextId]
+    });
+
+    ////////////////////////////////////
+    // USER INTERFACE
+    ////////////////////////////////////
+
+    // For keep it simple we use couple render functions instead React, Angular or anything else
+
+    var renders = [];
+    function createView(container, view) {
+        function render() {
+            view(container, controller.get())
+        }
+        render();
+        renders.push(render)
+    }
+
+    function updateViews() {
+        renders.forEach(function (render) {
+            render()
+        })
+    }
+
+    controller.on('change', updateViews);
+
+    ////////////////////////////////
+    // VIEWS
+    ////////////////////////////////
+
+    function colorSettingsView(container) {
+        container.innerHTML = '<button onclick="onSetColorClick(\'red\')">Set red color</button>'
+                + '<br>'
+                + '<button onclick="onSetColorClick(\'green\')">Set green color</button>'
+    }
+    function onSetColorClick(color) {
+        controller.getSignals().setColorClicked({color: color});
+    }
+
+    function createTodoView(container) {
+        container.innerHTML = '<input id="todoText" value="something else...">'
+                + '<button onclick="onAddTodoClick()">Add todo</button>'
+    }
+    function onAddTodoClick() {
+        var text = document.getElementById('todoText').value;
+        controller.getSignals().addTodoClicked({text: text});
+    }
+
+    function todosListView(container, state) {
+        var htmlTodos = state.todos.map(function (todo) {
+            return '<div>' + todo.text + '</div>'
+        });
+        container.style.color = state.listColor;
+        container.innerHTML = htmlTodos.join('');
+    }
+
+    createView(document.getElementById('colorSettingsBox'), colorSettingsView);
+    createView(document.getElementById('createTodoBox'), createTodoView);
+    createView(document.getElementById('todosListBox'), todosListView);
+
+</script>
+
 </body>
 </html>
